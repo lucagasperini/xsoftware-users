@@ -79,6 +79,8 @@ class xs_users_plugin
                         $data[] = $tmp;
                 }
 
+                if(empty($data))
+                        return;
 
                 xs_framework::html_input_array_to_table(
                         $data,

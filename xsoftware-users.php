@@ -24,9 +24,49 @@ class xs_users_plugin
                 add_action( 'user_register', [$this, 'user_register'] );
                 add_action( 'edit_user_created_user', [$this, 'user_register'] );
                 add_action('after_setup_theme', [$this, 'remove_admin_bar']);
+                add_action('login_head', [$this, 'login']);
+                add_filter('registration_errors', [$this, 'registration_errors'], 10, 3);
+                add_action('login_form_register', [$this, 'login_form_register']);
 
                 if(!empty($this->options['style']['login_logo']))
                         add_action('login_enqueue_scripts',  [$this, 'login_logo']);
+        }
+
+        function login()
+        {
+                if(isset($this->options['settings']['minimal']) && $this->options['settings']['minimal']) {
+                echo '<style>
+                        #registerform > p:first-child{
+                                display:none;
+                        }
+                        </style>
+                        <script type="text/javascript">
+                                jQuery(document).ready(function($){
+                                        $("#registerform > p:first-child").css("display", "none");
+                                });
+                        </script>';
+                }
+        }
+
+        function registration_errors($wp_error, $sanitized_user_login, $user_email)
+        {
+                if(isset($this->options['settings']['minimal']) && $this->options['settings']['minimal']) {
+                        if(isset($wp_error->errors['empty_username']))
+                                unset($wp_error->errors['empty_username']);
+
+                        if(isset($wp_error->errors['username_exists']))
+                                unset($wp_error->errors['username_exists']);
+                }
+                return $wp_error;
+        }
+
+        function login_form_register()
+        {
+                if(isset($this->options['settings']['minimal']) && $this->options['settings']['minimal']) {
+                        if(isset($_POST['user_login']) && isset($_POST['user_email']) && !empty($_POST['user_email'])) {
+                                $_POST['user_login'] = $_POST['user_email'];
+                        }
+                }
         }
 
         function remove_admin_bar()
@@ -57,7 +97,7 @@ class xs_users_plugin
 
         function registration_form()
         {
-                if($this->options['real_name']) {
+                if($this->options['settings']['real_name']) {
                         echo '<p>
                         <label for="first_name">First Name<br>
                         <input type="text" name="first_name" id="first_name" class="input"></label>
@@ -93,7 +133,7 @@ class xs_users_plugin
         {
                 $values = array();
 
-                if($this->options['real_name']) {
+                if($this->options['settings']['real_name']) {
                         $values['first_name'] = trim( $_POST['first_name'] );
                         $values['last_name'] = trim( $_POST['last_name'] );
 

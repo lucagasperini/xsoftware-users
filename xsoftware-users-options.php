@@ -8,7 +8,9 @@ class xs_users_options
 {
 
         private $default = array (
-                'real_name' => TRUE,
+                'settings' => [
+                        'real_name' => TRUE,
+                ],
                 'fields' => [
                 ],
                 'style' => [
@@ -48,9 +50,6 @@ class xs_users_options
                         wp_die( __( 'Exit!' ) );
                 }
 
-
-
-
                 echo '<div class="wrap">';
 
                 echo '<form action="options.php" method="post">';
@@ -85,14 +84,18 @@ class xs_users_options
                 $tab = xs_framework::create_tabs( [
                         'href' => '?page=xsoftware_users',
                         'tabs' => [
+                                'settings' => 'Settings',
                                 'fields' => 'Fields',
                                 'style' => 'Style'
                         ],
-                        'home' => 'fields',
+                        'home' => 'settings',
                         'name' => 'main_tab'
                 ]);
 
                 switch($tab) {
+                        case 'settings':
+                                $this->show_settings();
+                                return;
                         case 'fields':
                                 $this->show_fields();
                                 return;
@@ -106,7 +109,8 @@ class xs_users_options
         {
                 $current = $this->options;
 
-                $current['real_name'] = isset($input['real_name']);
+                $current['settings']['real_name'] = isset($input['settings']['real_name']);
+                $current['settings']['minimal'] = isset($input['settings']['minimal']);
 
                 if(isset($input['fields'])) {
                         $f = $input['fields'];
@@ -134,11 +138,11 @@ class xs_users_options
                 return $current;
         }
 
-        function show_fields()
+        function show_settings()
         {
                 $options = array(
-                        'name' => 'xs_options_users[real_name]',
-                        'compare' => $this->options['real_name'],
+                        'name' => 'xs_options_users[settings][real_name]',
+                        'compare' => $this->options['settings']['real_name'],
                         'echo' => TRUE
                 );
                 add_settings_field(
@@ -150,7 +154,24 @@ class xs_users_options
                         $options
                 );
 
+                $options = array(
+                        'name' => 'xs_options_users[settings][minimal]',
+                        'compare' => $this->options['settings']['minimal'],
+                        'echo' => TRUE
+                );
 
+                add_settings_field(
+                        $options['name'],
+                        'Use only E-Mail to register the user',
+                        'xs_framework::create_input_checkbox',
+                        'xs_users',
+                        'xs_users_section',
+                        $options
+                );
+        }
+
+        function show_fields()
+        {
                 $fields = $this->options['fields'];
 
                 $headers = array('Code', 'Name', 'Type', 'Save on Backend', 'Actions');

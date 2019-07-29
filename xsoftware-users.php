@@ -21,15 +21,36 @@ class xs_users_plugin
                 $this->options = get_option('xs_options_users');
 
                 add_action( 'register_form', [$this, 'registration_form'] );
+                add_action( 'login_form', [$this, 'login_form'] );
                 add_action( 'user_register', [$this, 'user_register'] );
                 add_action( 'edit_user_created_user', [$this, 'user_register'] );
                 add_action('after_setup_theme', [$this, 'remove_admin_bar']);
                 add_action('login_head', [$this, 'login']);
                 add_filter('registration_errors', [$this, 'registration_errors'], 10, 3);
                 add_action('login_form_register', [$this, 'login_form_register']);
+                add_action('wp_footer',[$this, 'analytics']);
+
+                add_shortcode('xs_users_facebook_login', [$this,'shortcode_facebook_login']);
 
                 if(!empty($this->options['style']['login_logo']))
                         add_action('login_enqueue_scripts',  [$this, 'login_logo']);
+        }
+
+        function analytics()
+        {
+                if(!isset($this->options['settings']['analytics']) || empty($this->options['settings']['analytics']))
+                        return;
+                echo '
+        <script async src="https://www.googletagmanager.com/gtag/js?id='.$this->options['settings']['analytics'].'">
+        </script>
+        <script>
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag("js", new Date());
+
+                gtag("config", "'.$this->options['settings']['analytics'].'");
+        </script>';
+
         }
 
         function login()
@@ -119,15 +140,70 @@ class xs_users_plugin
                         $data[] = $tmp;
                 }
 
-                if(empty($data))
-                        return;
+                if(!empty($data)) {
+                        xs_framework::html_input_array_to_table(
+                                $data,
+                                [ 'class' => 'xs_full_width' ]
+                        );
+                }
 
-                xs_framework::html_input_array_to_table(
-                        $data,
-                        [ 'class' => 'xs_full_width' ]
-                );
-
+                if(isset($this->options['settings']['fb_login']) && $this->options['settings']['fb_login']) {
+                        $this->facebook_login(TRUE);
+                }
         }
+
+        function login_form() {
+                if(isset($this->options['settings']['fb_login']) && $this->options['settings']['fb_login']) {
+                        $this->facebook_login();
+                }
+        }
+
+        function facebook_login($is_register = FALSE)
+        {
+                global $xs_socials_plugin;
+
+                $token = $xs_socials_plugin->facebook_callback();
+
+                if(empty($token)) {
+                        $url = $xs_socials_plugin->facebook_url(xs_framework::get_browser_url());
+                        echo apply_filters('xs_users_login_facebook', $url);
+                        return TRUE;
+                }
+
+                $fb = $xs_socials_plugin->facebook_login($token);
+
+                if(!is_array($fb)) {
+                        return FALSE;
+                }
+
+                $user = get_user_by('email', $fb['email'] );
+
+                if(isset($user->ID) && !empty($user->ID)) {
+                        $user_id = $user->ID;
+                } else {
+                        $user_id = register_new_user( $fb['first_name'].' '.$fb['last_name'], $fb['email'] );
+                        if (is_wp_error($user_id)) {
+                                echo '<div id="message" class="error"><p>'.$user_id->get_error_message().'</p></div>';
+                                return;
+                        }
+
+                        wp_update_user([
+                                'ID' => $user_id,
+                                'first_name' => $fb['first_name'],
+                                'last_name' => $fb['last_name']
+                        ]);
+                        update_user_meta( $user_id, 'xs_socials_facebook_id', $fb['id']);
+                }
+
+                wp_set_auth_cookie( $user_id, TRUE );
+                if(isset($_GET['redirect_to']) && !empty($_GET['redirect_to']))
+                        wp_redirect($_GET['redirect_to']);
+                else
+                        wp_redirect(home_url());
+
+                exit;
+        }
+
 
         function user_register( $user_id )
         {

@@ -111,6 +111,8 @@ class xs_users_options
 
                 $current['settings']['real_name'] = isset($input['settings']['real_name']);
                 $current['settings']['minimal'] = isset($input['settings']['minimal']);
+                $current['settings']['fb_login'] = isset($input['settings']['fb_login']);
+                $current['settings']['analytics'] = $input['settings']['analytics'];
 
                 if(isset($input['fields'])) {
                         $f = $input['fields'];
@@ -163,6 +165,36 @@ class xs_users_options
                 add_settings_field(
                         $options['name'],
                         'Use only E-Mail to register the user',
+                        'xs_framework::create_input_checkbox',
+                        'xs_users',
+                        'xs_users_section',
+                        $options
+                );
+
+                $options = array(
+                        'name' => 'xs_options_users[settings][analytics]',
+                        'value' => $this->options['settings']['analytics'],
+                        'echo' => TRUE
+                );
+
+                add_settings_field(
+                        $options['name'],
+                        'Google Analytics ID:',
+                        'xs_framework::create_input',
+                        'xs_users',
+                        'xs_users_section',
+                        $options
+                );
+
+                $options = [
+                        'name' => 'xs_options_users[settings][fb_login]',
+                        'compare' => $this->options['settings']['fb_login'],
+                        'echo' => TRUE
+                ];
+
+                add_settings_field(
+                        $options['name'],
+                        'User login and register with Facebook:',
                         'xs_framework::create_input_checkbox',
                         'xs_users',
                         'xs_users_section',

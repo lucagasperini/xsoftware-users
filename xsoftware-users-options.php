@@ -307,6 +307,6 @@ class xs_users_options
 
 }
 
-endif;
-
 $xs_users_options = new xs_users_options();
+
+endif;

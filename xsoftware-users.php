@@ -239,6 +239,6 @@ class xs_users_plugin
 
 }
 
-endif;
-
 $xs_users_plugin = new xs_users_plugin();
+
+endif;

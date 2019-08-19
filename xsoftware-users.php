@@ -165,7 +165,7 @@ class xs_users_plugin
                 $token = $xs_socials_plugin->facebook_callback();
 
                 if(empty($token)) {
-                        $url = $xs_socials_plugin->facebook_url($is_register ? wp_registration_url() : wp_login_url());
+                        $url = $xs_socials_plugin->facebook_url(wp_login_url());
                         echo apply_filters('xs_users_login_facebook', $url);
                         return TRUE;
                 }

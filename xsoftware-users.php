@@ -28,7 +28,7 @@ class xs_users_plugin
                 add_action('login_head', [$this, 'login']);
                 add_filter('registration_errors', [$this, 'registration_errors'], 10, 3);
                 add_action('login_form_register', [$this, 'login_form_register']);
-                add_action('wp_footer',[$this, 'analytics']);
+                add_action('wp_head',[$this, 'analytics']);
 
                 add_shortcode('xs_users_facebook_login', [$this,'shortcode_facebook_login']);
 

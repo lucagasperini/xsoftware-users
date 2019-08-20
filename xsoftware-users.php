@@ -161,11 +161,13 @@ class xs_users_plugin
         function facebook_login($is_register = FALSE)
         {
                 global $xs_socials_plugin;
+                
+                $redirect_url = wp_login_url();
 
-                $token = $xs_socials_plugin->facebook_callback();
+                $token = $xs_socials_plugin->facebook_callback($redirect_url);
 
                 if(empty($token)) {
-                        $url = $xs_socials_plugin->facebook_url(wp_login_url());
+                        $url = $xs_socials_plugin->facebook_url($redirect_url);
                         echo apply_filters('xs_users_login_facebook', $url);
                         return TRUE;
                 }

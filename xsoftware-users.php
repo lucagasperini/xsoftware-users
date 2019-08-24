@@ -66,7 +66,7 @@ class xs_users_plugin
 	"tax": '.$invoice['transaction']['tax'].',
 	"shipping": '.$invoice['transaction']['shipping'].',
 	"items": [{';
-	foreach($invoice['items'] as $item) {
+	foreach($invoice['items'] as $key => $item) {
 	echo '"id": "'.$item['name'].'",';
 	echo '"name": "'.$item['name'].'",';
 	echo '"brand": "'.$invoice['company']['name'].'",';
@@ -75,7 +75,11 @@ class xs_users_plugin
 //	"list_position": 1,
 	echo '"quantity": '.$item['quantity'].',';
 	echo '"price": "'.$item['price'].'"';
-	echo '},';
+	if ($key === array_key_last($invoice['items'])) {
+        	echo '}';
+	} else {
+		echo '},';
+	}
 	}
 	echo ']});</script>';
 

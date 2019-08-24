@@ -29,6 +29,7 @@ class xs_users_plugin
                 add_filter('registration_errors', [$this, 'registration_errors'], 10, 3);
                 add_action('login_form_register', [$this, 'login_form_register']);
                 add_action('wp_head',[$this, 'analytics']);
+                add_filter('xs_users_analytics_payment', [$this, 'ecommerce_analytics']);
 
                 add_shortcode('xs_users_facebook_login', [$this,'shortcode_facebook_login']);
 
@@ -50,6 +51,33 @@ class xs_users_plugin
 
                 gtag("config", "'.$this->options['settings']['analytics'].'");
         </script>';
+
+        }
+        
+        function ecommerce_analytics($invoice)
+        {
+        if(!isset($this->options['settings']['analytics']) || empty($this->options['settings']['analytics']))
+                        return;
+	echo '<script>gtag("event", "purchase", {
+	"transaction_id": "'.$invoice['payment']['id'].'",
+	"affiliation": "XSoftware E-Commerce",
+	"value": '.$invoice['transaction']['subtotal'].',
+	"currency": "'.$invoice['transaction']['currency'].'",
+	"tax": '.$invoice['transaction']['tax'].',
+	"shipping": '.$invoice['transaction']['shipping'].',
+	"items": [{';
+	foreach($invoice['items'] as $item) {
+	echo '"id": "'.$item['name'].'",';
+	echo '"name": "'.$item['name'].'",';
+	echo '"brand": "'.$invoice['company']['name'].'",';
+//	"category": "Apparel/T-Shirts",
+//	"variant": "Black",
+//	"list_position": 1,
+	echo '"quantity": '.$item['quantity'].',';
+	echo '"price": "'.$item['price'].'"';
+	echo '},';
+	}
+	echo ']});</script>';
 
         }
 

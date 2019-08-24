@@ -65,8 +65,9 @@ class xs_users_plugin
 	"currency": "'.$invoice['transaction']['currency'].'",
 	"tax": '.$invoice['transaction']['tax'].',
 	"shipping": '.$invoice['transaction']['shipping'].',
-	"items": [{';
+	"items": [';
 	foreach($invoice['items'] as $key => $item) {
+	echo '{';
 	echo '"id": "'.$item['name'].'",';
 	echo '"name": "'.$item['name'].'",';
 	echo '"brand": "'.$invoice['company']['name'].'",';
